@@ -1,7 +1,8 @@
+import 'package:fluffypawmobile/presentation/pages/signup/user_details_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'user_details_screen.dart';
+import 'component/custom_button.dart';
+import 'component/custom_header.dart';
+import 'component/custom_input_field.dart';
 
 class VerifyOtpScreen extends StatelessWidget {
   final String phone;
@@ -21,106 +22,31 @@ class VerifyOtpScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(context),
-                _buildOtpInput(),
+                CustomHeader(
+                  title: 'Verify OTP',
+                  onBackPress: () => Navigator.pop(context),
+                ),
+
+                CustomInputField(
+                  label: "Enter Your OTP",
+                  hintText: "Enter your OTP sent to" + " "+ phone,
+                  controller: _otpController,
+                ),
                 SizedBox(height: 40),
-                _buildVerifyButton(context),
+                CustomButton(
+                  text: 'Verify',
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserDetailsScreen(phone: phone),
+                      ),
+                    );
+                  }
+                ),
+
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.fromLTRB(5.8, 0, 5.8, 75),
-      child: Align(
-        alignment: Alignment.topLeft,
-        child: SizedBox(
-          width: 230,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              IconButton(
-                icon: SvgPicture.asset('assets/svg/auth_back_icon.svg'),
-                onPressed: () => Navigator.pop(context),
-              ),
-              Text(
-                'Verify OTP',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 24,
-                  color: Color(0xFF000000),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOtpInput() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Enter OTP',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w400,
-            fontSize: 16,
-            color: Color(0xFF1B1B1B),
-          ),
-        ),
-        SizedBox(height: 8),
-        TextField(
-          controller: _otpController,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            hintText: 'Enter the OTP sent to $phone',
-            contentPadding: EdgeInsets.all(15),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildVerifyButton(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () {
-          // TODO: Add OTP verification logic
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => UserDetailsScreen(phone: phone),
-            ),
-          );
-        },
-        child: Text(
-          'Verify',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w500,
-            fontSize: 16,
-            color: Color(0xFFFFFFFF),
-          ),
-        ),
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all<Color>(Color(0xFF1B85F3)),
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-            EdgeInsets.symmetric(vertical: 12),
           ),
         ),
       ),

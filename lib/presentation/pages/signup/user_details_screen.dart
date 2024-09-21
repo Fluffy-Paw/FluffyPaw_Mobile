@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluffypawmobile/presentation/viewmodels/signup_viewmodel.dart';
 import 'package:fluffypawmobile/dependency_injection/dependency_injection.dart';
+import 'component/custom_header.dart';
+import 'component/custom_input_field.dart';
 
 final signupViewModelProvider = StateNotifierProvider<SignupViewmodel, AsyncValue<void>>((ref) {
   return SignupViewmodel(ref.read(registerAccountProvider));
@@ -32,7 +33,6 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final signupState = ref.watch(signupViewModelProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -44,83 +44,30 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(context),
-                _buildInputField('Username', _userNameController),
-                _buildInputField('Password', _passwordController, isPassword: true),
-                _buildInputField('Confirm Password', _confirmPasswordController, isPassword: true),
-                _buildInputField('Full Name', _fullNameController),
-                _buildInputField('Address', _addressController),
-                _buildInputField('Email', _emailController),
+                CustomHeader(
+                  title: 'User Detail',
+                  onBackPress: () => Navigator.pop(context),
+                ),
+                CustomInputField(
+                  label: 'Username',
+                  hintText: 'Enter Your Username',
+                  controller: _userNameController,
+                ),
+                CustomInputField(label: "Password",hintText: 'Enter Your Password', controller: _passwordController, isPassword: true),
+                CustomInputField(label: 'Confirm Password',hintText: 'Enter Confirm Password',controller:  _confirmPasswordController, isPassword: true),
+                CustomInputField(label: 'Full Name',hintText: 'Enter Your Full Name',controller:  _fullNameController),
+                CustomInputField(label: 'Address',hintText:'Enter Your Address',controller:  _addressController),
+                CustomInputField(label: 'Email',hintText: 'Enter Your Email' ,controller:  _emailController),
                 _buildDatePicker(),
                 _buildGenderPicker(),
                 _buildTermsCheckbox(),
                 SizedBox(height: 40),
                 _buildCompleteButton(context),
+
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.fromLTRB(5.8, 0, 5.8, 75),
-      child: Align(
-        alignment: Alignment.topLeft,
-        child: SizedBox(
-          width: 230,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              IconButton(
-                icon: SvgPicture.asset('assets/svg/auth_back_icon.svg'),
-                onPressed: () => Navigator.pop(context),
-              ),
-              Text(
-                'User Details',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 24,
-                  color: Color(0xFF000000),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInputField(String label, TextEditingController controller, {bool isPassword = false}) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w400,
-              fontSize: 16,
-              color: Color(0xFF1B1B1B),
-            ),
-          ),
-          SizedBox(height: 8),
-          TextField(
-            controller: controller,
-            obscureText: isPassword,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              hintText: 'Enter your $label',
-              contentPadding: EdgeInsets.all(15),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -290,6 +237,8 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
 
   void _registerUser(BuildContext context) {
     final signupViewModel = ref.read(signupViewModelProvider.notifier);
+
+    // Gọi quá trình đăng ký và xử lý kết quả
     signupViewModel.register(
       widget.phone,
       _userNameController.text,
@@ -300,6 +249,23 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
       _addressController.text,
       _selectedDate,
       _selectedGender,
-    );
+    ).then((result) {
+      result.fold(
+            (failure) {
+          // Nếu có lỗi xảy ra, hiển thị lỗi từ tầng Data
+          print("Register failed: ${failure.message}");
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Đăng ký thất bại: ${failure.message}')),
+          );
+        },
+            (_) {
+          // Đăng ký thành công, log ra console
+          print("Register successful");
+        },
+      );
+    });
   }
+
+
+
 }

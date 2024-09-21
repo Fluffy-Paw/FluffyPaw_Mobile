@@ -1,3 +1,5 @@
+import 'package:dartz/dartz.dart';
+import 'package:fluffypawmobile/core/error/failures.dart';
 import 'package:fluffypawmobile/domain/entities/Account.dart';
 import 'package:fluffypawmobile/domain/usecases/register_account.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,7 +9,7 @@ class SignupViewmodel extends StateNotifier<AsyncValue<void>> {
 
   SignupViewmodel(this._registerAccount) : super(AsyncValue.data(null));
 
-  Future<void> register(
+  Future<Either<Failures, void>> register(
     String phone,
     String userName,
     String passWord,
@@ -34,5 +36,6 @@ class SignupViewmodel extends StateNotifier<AsyncValue<void>> {
         (failure) => AsyncValue.error(failure, StackTrace.current),
         (_) => AsyncValue.data(null),
     );
+    return result;
   }
 }
