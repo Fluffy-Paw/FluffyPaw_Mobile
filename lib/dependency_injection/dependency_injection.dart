@@ -1,8 +1,8 @@
 import 'package:fluffypawmobile/data/datasources/abstract/auth_remote_data_source.dart';
 import 'package:fluffypawmobile/data/datasources/authRemoteDataSourceImpl.dart';
+import 'package:fluffypawmobile/presentation/viewmodels/signup_viewmodel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-
 import '../data/repositories/auth_repository_impl.dart';
 import '../domain/repositories/auth_repository.dart';
 import '../domain/usecases/register_account.dart';
@@ -19,4 +19,7 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 
 final registerAccountProvider = Provider<RegisterAccount>((ref) {
   return RegisterAccount(ref.read(authRepositoryProvider));
+});
+final signupViewModelProvider = StateNotifierProvider<SignupViewmodel, AsyncValue<void>>((ref) {
+  return SignupViewmodel(ref.read(registerAccountProvider));
 });

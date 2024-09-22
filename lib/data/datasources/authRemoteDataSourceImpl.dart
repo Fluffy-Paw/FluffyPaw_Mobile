@@ -40,15 +40,17 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDataSource {
       print('Error message: $errorMessage');
       print('Full response body: ${response.body}');
 
-      // If you want to throw an exception, you can still do so:
-      // throw ServerException('Error $errorCode: $errorMessage');
+      // Throw ServerException for all non-200 responses
+      throw ServerException(message: ' $errorMessage');
+    } on http.ClientException {
+      // Catch specific network-related exceptions
+      throw NetworkException(message: 'Network error: Unable to connect to the server');
     } catch (e) {
-      // Log any exceptions that occur during the API call
-      print('Exception occurred during API call:');
-      print(e.toString());
-
-      // If you want to rethrow the exception:
-      // throw NetworkException('Network error: ${e.toString()}');
+      // For any other unexpected errors, rethrow as ServerException
+      if (e is ServerException) {
+        rethrow;
+      }
+      throw ServerException(message: 'Unexpected error: ${e.toString()}');
     }
   }
 }

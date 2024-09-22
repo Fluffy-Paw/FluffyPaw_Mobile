@@ -10,7 +10,7 @@ class RegisterAccount implements UseCase<void, Account>{
   RegisterAccount(this.authRepository);
 
   @override
-  Future<Either<Failures, dynamic>> call(Account account) async {
+  Future<Either<Failures, Account>> call(Account account) async {
     // TODO: implement call
     return await authRepository.register(account);
   }

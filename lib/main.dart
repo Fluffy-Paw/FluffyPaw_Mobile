@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluffypawmobile/presentation/pages/signup/phone_signup_screen.dart';
-import 'package:fluffypawmobile/dependency_injection/dependency_injection.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   runApp(
     ProviderScope(
       child: MyApp(),

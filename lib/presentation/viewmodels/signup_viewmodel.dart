@@ -9,7 +9,7 @@ class SignupViewmodel extends StateNotifier<AsyncValue<void>> {
 
   SignupViewmodel(this._registerAccount) : super(AsyncValue.data(null));
 
-  Future<Either<Failures, void>> register(
+  Future<Either<Failures, Account>> register(
     String phone,
     String userName,
     String passWord,
@@ -34,7 +34,7 @@ class SignupViewmodel extends StateNotifier<AsyncValue<void>> {
     final result = await _registerAccount(account);
     state = result.fold(
         (failure) => AsyncValue.error(failure, StackTrace.current),
-        (_) => AsyncValue.data(null),
+        (account) => AsyncValue.data(account),
     );
     return result;
   }

@@ -12,7 +12,7 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failures, void>> register(Account account) async {
+  Future<Either<Failures, Account>> register(Account account) async {
     try {
       final accountModel = AccountModel(
         phone: account.phone,
@@ -26,7 +26,8 @@ class AuthRepositoryImpl implements AuthRepository {
         gender: account.gender ?? '', // Provide a default empty string if null
       );
       await remoteDataSource.registerAccount(accountModel);
-      return Right(null);
+      //print(account);
+      return Right(account);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
     } on NetworkException catch (e) {

@@ -3,5 +3,5 @@ import 'package:fluffypawmobile/core/error/failures.dart';
 import 'package:fluffypawmobile/domain/entities/Account.dart';
 
 abstract class AuthRepository {
-  Future<Either<Failures, void>> register (Account account);
+  Future<Either<Failures, Account>> register (Account account);
 }

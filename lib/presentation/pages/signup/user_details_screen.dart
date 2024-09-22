@@ -1,15 +1,14 @@
+import 'package:fluffypawmobile/presentation/pages/signup/component/show_custom_snack_bar.dart';
+import 'package:fluffypawmobile/presentation/pages/signup/validate/signup_validate.dart';
+import 'package:fluffypawmobile/presentation/viewmodels/service/signup_viewmodel_service.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluffypawmobile/presentation/viewmodels/signup_viewmodel.dart';
 import 'package:fluffypawmobile/dependency_injection/dependency_injection.dart';
-import 'component/custom_header.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'component/custom_input_field.dart';
-
-final signupViewModelProvider = StateNotifierProvider<SignupViewmodel, AsyncValue<void>>((ref) {
-  return SignupViewmodel(ref.read(registerAccountProvider));
-});
 
 class UserDetailsScreen extends ConsumerStatefulWidget {
   final String phone;
@@ -23,7 +22,8 @@ class UserDetailsScreen extends ConsumerStatefulWidget {
 class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -33,8 +33,15 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-
+    final isLoading = ref.watch(signupViewModelProvider).isLoading;
+    
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: Text('Enter Your Information'),
+        backgroundColor: Colors.white,
+      ),
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -44,26 +51,41 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CustomHeader(
-                  title: 'User Detail',
-                  onBackPress: () => Navigator.pop(context),
-                ),
+
                 CustomInputField(
                   label: 'Username',
                   hintText: 'Enter Your Username',
                   controller: _userNameController,
                 ),
-                CustomInputField(label: "Password",hintText: 'Enter Your Password', controller: _passwordController, isPassword: true),
-                CustomInputField(label: 'Confirm Password',hintText: 'Enter Confirm Password',controller:  _confirmPasswordController, isPassword: true),
-                CustomInputField(label: 'Full Name',hintText: 'Enter Your Full Name',controller:  _fullNameController),
-                CustomInputField(label: 'Address',hintText:'Enter Your Address',controller:  _addressController),
-                CustomInputField(label: 'Email',hintText: 'Enter Your Email' ,controller:  _emailController),
+                CustomInputField(
+                    label: "Password",
+                    hintText: 'Enter Your Password',
+                    controller: _passwordController,
+                    isPassword: true),
+                CustomInputField(
+                    label: 'Confirm Password',
+                    hintText: 'Enter Confirm Password',
+                    controller: _confirmPasswordController,
+                    isPassword: true),
+                CustomInputField(
+                    label: 'Full Name',
+                    hintText: 'Enter Your Full Name',
+                    controller: _fullNameController),
+                CustomInputField(
+                    label: 'Address',
+                    hintText: 'Enter Your Address',
+                    controller: _addressController),
+                CustomInputField(
+                    label: 'Email',
+                    hintText: 'Enter Your Email',
+                    controller: _emailController),
                 _buildDatePicker(),
                 _buildGenderPicker(),
                 _buildTermsCheckbox(),
                 SizedBox(height: 40),
+                 // loadingAnimation(),
+                isLoading ? loadingAnimation() : Container(),
                 _buildCompleteButton(context),
-
               ],
             ),
           ),
@@ -200,15 +222,19 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
 
   Widget _buildCompleteButton(BuildContext context) {
     return Container(
+
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
         onPressed: _agreeToTerms
             ? () {
-          if (_validateInputs()) {
-            _registerUser(context);
-          }
-        }
+                if (_validateInputs()==null) {
+                  _registerUser(context);
+
+                } else {
+                  showCustomSnackBar(context, _validateInputs().toString());
+                }
+              }
             : null,
         child: Text(
           'Complete',
@@ -227,45 +253,39 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
     );
   }
 
-  bool _validateInputs() {
-    // Add validation logic here
-    return _userNameController.text.isNotEmpty &&
-        _passwordController.text.isNotEmpty &&
-        _confirmPasswordController.text.isNotEmpty &&
-        _fullNameController.text.isNotEmpty;
+  Widget loadingAnimation() {
+    return Center(
+      child: LoadingAnimationWidget.staggeredDotsWave(color: Colors.blue, size: 50),
+    );
+  }
+
+  String? _validateInputs() {
+    return SignupValidate().validateSignUpInputs(
+        _userNameController.text,
+        _passwordController.text,
+        _confirmPasswordController.text,
+        _fullNameController.text);
   }
 
   void _registerUser(BuildContext context) {
-    final signupViewModel = ref.read(signupViewModelProvider.notifier);
+    final signupService = SignupViewmodelService(ref);
+    signupService.registerUser(
+      phone: widget.phone,
+      userName: _userNameController.text,
+      password: _passwordController.text,
+      confirmPassword: _confirmPasswordController.text,
+      email: _emailController.text,
+      fullName: _fullNameController.text,
+      address: _addressController.text,
+      dob: _selectedDate,
+      gender: _selectedGender,
+      onError: (message) {
 
-    // Gọi quá trình đăng ký và xử lý kết quả
-    signupViewModel.register(
-      widget.phone,
-      _userNameController.text,
-      _passwordController.text,
-      _confirmPasswordController.text,
-      _emailController.text,
-      _fullNameController.text,
-      _addressController.text,
-      _selectedDate,
-      _selectedGender,
-    ).then((result) {
-      result.fold(
-            (failure) {
-          // Nếu có lỗi xảy ra, hiển thị lỗi từ tầng Data
-          print("Register failed: ${failure.message}");
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Đăng ký thất bại: ${failure.message}')),
-          );
-        },
-            (_) {
-          // Đăng ký thành công, log ra console
-          print("Register successful");
-        },
-      );
-    });
+        showCustomSnackBar(context, 'Đăng ký thất bại: $message');
+      },
+      onSuccess: () {
+        showCustomSnackBar(context, 'Đăng ký thành công');
+      },
+    );
   }
-
-
-
 }
