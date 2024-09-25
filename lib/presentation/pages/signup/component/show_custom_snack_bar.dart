@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-void showCustomSnackBar(BuildContext context, String message) {
+void showCustomSnackBar(BuildContext context, String message, Color backgroundColor) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(
@@ -8,7 +8,7 @@ void showCustomSnackBar(BuildContext context, String message) {
         style: TextStyle(fontSize: 16),
         textAlign: TextAlign.center,
       ),
-      backgroundColor: Colors.red,
+      backgroundColor: backgroundColor, // Sử dụng màu sắc từ tham số
       duration: const Duration(milliseconds: 1500),
       padding: const EdgeInsets.symmetric(
         vertical: 16.0,
@@ -18,7 +18,7 @@ void showCustomSnackBar(BuildContext context, String message) {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.0),
       ),
-      margin: EdgeInsets.fromLTRB(24.0, 0.0, 24.0, MediaQuery.of(context).padding.bottom), // Điều chỉnh margin dưới cùng
+      margin: EdgeInsets.fromLTRB(24.0, 0.0, 24.0, MediaQuery.of(context).padding.bottom),
     ),
   );
 }

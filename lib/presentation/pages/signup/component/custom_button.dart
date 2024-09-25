@@ -19,11 +19,11 @@ class CustomButton extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w500,
             fontSize: 16,
-            color: Color(0xFFFFFFFF),
+            color: Color(0xFF333333),
           ),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Color(0xFF1B85F3),
+          backgroundColor: Color(0xFFF6C8E1),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),

@@ -5,6 +5,10 @@ abstract class Failures extends Equatable {
 
   const Failures({required this.message});
 
+  String getMessage() {
+    return message; // Phương thức này trả về thông điệp lỗi
+  }
+
   @override
   List<Object> get props => [message];
 }

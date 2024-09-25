@@ -1,3 +1,4 @@
+import 'package:fluffypawmobile/presentation/pages/login/login_screen.dart';
 import 'package:fluffypawmobile/presentation/pages/signup/component/or_divider.dart';
 import 'package:fluffypawmobile/presentation/pages/signup/validate/signup_validate.dart';
 import 'package:flutter/material.dart';
@@ -77,7 +78,9 @@ class PhoneSignupScreen extends StatelessWidget {
               SizedBox(height: 28),
               OrDivider(),
               SizedBox(height: 20),
-              _buildLoginLink(),
+              _buildLoginLink(
+                context
+              ),
             ],
           ),
         ),
@@ -85,24 +88,36 @@ class PhoneSignupScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLoginLink() {
+  Widget _buildLoginLink(BuildContext context) {
     return Center(
-      child: RichText(
-        text: TextSpan(
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w400,
-            fontSize: 14,
-            color: Color(0xFF838383),
-          ),
-          children: [
-            TextSpan(text: "Already have account? "),
-            TextSpan(
-              text: 'Login',
-              style: TextStyle(color: Color(0xFF007DFC)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'Already have an account?',
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w400,
+              fontSize: 14,
+              color: Color(0xFF838383),
             ),
-          ],
-        ),
+          ),
+          TextButton(
+            onPressed: (){
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LogIn(),
+                ),
+              );
+            },
+            child: Text(
+              'Login',
+              style: TextStyle(color: Color(0xFFF6C8E1)), // Color for the button text
+            ),
+          ),
+        ],
       ),
     );
   }
+
 }

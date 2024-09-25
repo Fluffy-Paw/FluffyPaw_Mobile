@@ -1,8 +1,8 @@
+import 'package:fluffypawmobile/core/error/failures.dart';
 import 'package:fluffypawmobile/presentation/pages/signup/component/show_custom_snack_bar.dart';
-import 'package:fluffypawmobile/presentation/pages/signup/validate/signup_validate.dart';
-import 'package:fluffypawmobile/presentation/viewmodels/service/signup_viewmodel_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,10 +20,11 @@ class UserDetailsScreen extends ConsumerStatefulWidget {
 }
 
 class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
+  bool _isSubmitted = false;
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  TextEditingController();
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -33,8 +34,8 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isLoading = ref.watch(signupViewModelProvider).isLoading;
-    
+    final signupViewModel = ref.watch(signupViewModelProvider);
+
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
@@ -51,7 +52,6 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 CustomInputField(
                   label: 'Username',
                   hintText: 'Enter Your Username',
@@ -83,9 +83,33 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
                 _buildGenderPicker(),
                 _buildTermsCheckbox(),
                 SizedBox(height: 40),
-                 // loadingAnimation(),
-                isLoading ? loadingAnimation() : Container(),
-                _buildCompleteButton(context),
+                signupViewModel.when(
+                  data: (user) {
+                    if (_isSubmitted && user != null) {
+                      // Hiển thị Snackbar sau khi widget đã xây dựng xong
+                      SchedulerBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          showCustomSnackBar(context, user.message, Colors.green);
+                        }
+                      });
+                    }
+                    return _buildCompleteButton(context);
+                  },
+                  error: (error, stack) {
+                    if (_isSubmitted) {
+                      // Hiển thị Snackbar sau khi widget đã xây dựng xong
+                      String errorMessage = error is Failures ? error.getMessage() : '$error';
+
+                      SchedulerBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          showCustomSnackBar(context, errorMessage, Colors.red);
+                        }
+                      });
+                    }
+                    return _buildCompleteButton(context);
+                  },
+                  loading: loadingAnimation,
+                ),
               ],
             ),
           ),
@@ -222,19 +246,25 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
 
   Widget _buildCompleteButton(BuildContext context) {
     return Container(
-
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
         onPressed: _agreeToTerms
             ? () {
-                if (_validateInputs()==null) {
-                  _registerUser(context);
-
-                } else {
-                  showCustomSnackBar(context, _validateInputs().toString());
-                }
-              }
+          setState(() {
+            _isSubmitted = true; // Đặt _isSubmitted thành true khi bấm nút
+          });
+          ref.read(signupViewModelProvider.notifier).register(
+              widget.phone,
+              _userNameController.text,
+              _passwordController.text,
+              _confirmPasswordController.text,
+              _emailController.text,
+              _fullNameController.text,
+              _addressController.text,
+              _selectedDate,
+              _selectedGender);
+        }
             : null,
         child: Text(
           'Complete',
@@ -256,36 +286,6 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
   Widget loadingAnimation() {
     return Center(
       child: LoadingAnimationWidget.staggeredDotsWave(color: Colors.blue, size: 50),
-    );
-  }
-
-  String? _validateInputs() {
-    return SignupValidate().validateSignUpInputs(
-        _userNameController.text,
-        _passwordController.text,
-        _confirmPasswordController.text,
-        _fullNameController.text);
-  }
-
-  void _registerUser(BuildContext context) {
-    final signupService = SignupViewmodelService(ref);
-    signupService.registerUser(
-      phone: widget.phone,
-      userName: _userNameController.text,
-      password: _passwordController.text,
-      confirmPassword: _confirmPasswordController.text,
-      email: _emailController.text,
-      fullName: _fullNameController.text,
-      address: _addressController.text,
-      dob: _selectedDate,
-      gender: _selectedGender,
-      onError: (message) {
-
-        showCustomSnackBar(context, 'Đăng ký thất bại: $message');
-      },
-      onSuccess: () {
-        showCustomSnackBar(context, 'Đăng ký thành công');
-      },
     );
   }
 }
