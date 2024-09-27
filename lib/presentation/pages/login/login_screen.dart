@@ -1,4 +1,5 @@
 import 'package:fluffypawmobile/dependency_injection/dependency_injection.dart';
+import 'package:fluffypawmobile/presentation/pages/home/home.dart';
 import 'package:fluffypawmobile/presentation/pages/signup/component/custom_button.dart';
 import 'package:fluffypawmobile/presentation/pages/signup/component/custom_input_field.dart';
 import 'package:flutter/material.dart';
@@ -86,8 +87,9 @@ class _LogInState extends ConsumerState<LogIn> {
               SizedBox(height: 40),
               CustomButton(
                 text: 'Log In',
-                onPressed: () {
+                onPressed: () async {
                   if (_userNameController.text.isEmpty || _passwordController.text.isEmpty) {
+                    // Hiển thị thông báo lỗi nếu email hoặc mật khẩu bị để trống
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
@@ -106,14 +108,71 @@ class _LogInState extends ConsumerState<LogIn> {
                       ),
                     );
                   } else {
-                    // Bắt đầu quá trình đăng nhập
-                    ref.read(loginViewModelProvider.notifier).login(
+                    // Gọi login từ ViewModel và xử lý kết quả
+                    final result = await ref.read(loginViewModelProvider.notifier).login(
                       _userNameController.text,
                       _passwordController.text,
+                      context
+                    );
+
+                    // Sử dụng fold để xử lý kết quả Either
+                    result.fold(
+                          (failure) {
+                        // Hiển thị lỗi nếu login thất bại
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Đăng nhập thất bại. Vui lòng thử lại.',
+                              style: TextStyle(fontSize: 16),
+                              textAlign: TextAlign.center,
+                            ),
+                            backgroundColor: Colors.red,
+                            duration: const Duration(milliseconds: 1500),
+                            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            margin: EdgeInsets.symmetric(horizontal: 24.0),
+                          ),
+                        );
+                      },
+                          (apiResponse) {
+                        // if (apiResponse.statusCode == 200) {
+                        //   // Nếu đăng nhập thành công, điều hướng đến trang Home
+                        //   Navigator.pushReplacement(
+                        //     context,
+                        //     MaterialPageRoute(
+                        //       builder: (context) => Home(),
+                        //     ),
+                        //   );
+                        // } else {
+                        //   // Hiển thị thông báo lỗi nếu trạng thái không phải 200
+                        //   ScaffoldMessenger.of(context).showSnackBar(
+                        //     SnackBar(
+                        //       content: Text(
+                        //         apiResponse.message ?? 'Đăng nhập thất bại.',
+                        //         style: TextStyle(fontSize: 16),
+                        //         textAlign: TextAlign.center,
+                        //       ),
+                        //       backgroundColor: Colors.red,
+                        //       duration: const Duration(milliseconds: 1500),
+                        //       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+                        //       behavior: SnackBarBehavior.floating,
+                        //       shape: RoundedRectangleBorder(
+                        //         borderRadius: BorderRadius.circular(12.0),
+                        //       ),
+                        //       margin: EdgeInsets.symmetric(horizontal: 24.0),
+                        //     ),
+                        //   );
+                        // }
+                      },
                     );
                   }
                 },
               ),
+
+
               SizedBox(height: 28),
               loginViewModel.when(
                 data: (message) {

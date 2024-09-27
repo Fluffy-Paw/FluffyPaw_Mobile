@@ -1,14 +1,75 @@
-import 'package:fluffypawmobile/presentation/pages/login/login_screen.dart';
-import 'package:fluffypawmobile/presentation/pages/signup/component/or_divider.dart';
-import 'package:fluffypawmobile/presentation/pages/signup/validate/signup_validate.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'component/custom_button.dart';
 import 'component/custom_input_field.dart';
 import 'verify_otp_screen.dart';
 
 class PhoneSignupScreen extends StatelessWidget {
   final TextEditingController _phoneController = TextEditingController();
+
+  Future<void> _submitPhoneNumber(BuildContext context) async {
+    String phone = _phoneController.text.trim();
+    FirebaseAuth auth = FirebaseAuth.instance;
+
+    try {
+      await auth.verifyPhoneNumber(
+        phoneNumber:"+84"+phone,
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          // Tính năng này chỉ hoạt động trên Android, bỏ qua cho iOS
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          print("Verification failed: ${e.message}");
+          if (e.code == 'invalid-phone-number') {
+            print('Số điện thoại không hợp lệ.');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Số điện thoại không hợp lệ.'),
+                backgroundColor: Colors.red,
+                duration: Duration(seconds: 3),
+              ),
+            );
+          } else {
+            print('Error code: ${e.code}');
+            print('Error message: ${e.message}');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Lỗi: ${e.message}'),
+                backgroundColor: Colors.red,
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          print("Verification code sent. VerificationId: $verificationId");
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => VerifyOtpScreen(
+                phone: phone,
+                verificationId: verificationId,
+              ),
+            ),
+          );
+        },
+        // Tắt tính năng auto-retrieval bằng cách đặt thời gian chờ rất ngắn
+        codeAutoRetrievalTimeout: (String verificationId) {
+          print("Code auto-retrieval timeout: $verificationId");
+        },
+        // Đặt thời gian timeout rất ngắn để không sử dụng APNs
+        timeout: Duration(seconds: 0),
+      );
+    } catch (e) {
+      print("Error during phone verification: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Đã xảy ra lỗi trong quá trình xác minh.'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,61 +86,28 @@ class PhoneSignupScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // CustomHeader(
-              //   title: 'Sign Up',
-              //   onBackPress: () => Navigator.pop(context),
-              // ),
-
               CustomInputField(
                 label: 'Phone Number',
                 hintText: "Enter Your Phone Number",
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
               ),
-
               SizedBox(height: 40),
               CustomButton(
                 text: 'Continue',
                 onPressed: () {
-                  if(SignupValidate().validateSignUpPhoneInput(_phoneController.text)){
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => VerifyOtpScreen(phone: _phoneController.text),
+                  if (_phoneController.text.isNotEmpty) {
+                    _submitPhoneNumber(context);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Số điện thoại không được để trống.'),
+                        backgroundColor: Colors.red,
+                        duration: const Duration(milliseconds: 1500),
                       ),
                     );
-                  }else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Số điện thoại không được để trống',
-                            style: TextStyle(fontSize: 16), // Tăng kích thước chữ
-                            textAlign: TextAlign.center, // Canh giữa nội dung
-                          ),
-                          backgroundColor: Colors.red, // Màu nền đỏ cho lỗi
-                          duration: const Duration(milliseconds: 1500),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 16.0, // Tăng padding trên dưới
-                            horizontal: 20.0, // Tăng padding hai bên
-                          ),
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0), // Tăng độ bo góc
-                          ),
-                          margin: EdgeInsets.symmetric(horizontal: 24.0), // Khoảng cách từ các cạnh màn hình
-                        ),
-
-                    );
                   }
-
                 },
-              ),
-
-              SizedBox(height: 28),
-              OrDivider(),
-              SizedBox(height: 20),
-              _buildLoginLink(
-                context
               ),
             ],
           ),
@@ -87,37 +115,4 @@ class PhoneSignupScreen extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildLoginLink(BuildContext context) {
-    return Center(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Already have an account?',
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w400,
-              fontSize: 14,
-              color: Color(0xFF838383),
-            ),
-          ),
-          TextButton(
-            onPressed: (){
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => LogIn(),
-                ),
-              );
-            },
-            child: Text(
-              'Login',
-              style: TextStyle(color: Color(0xFFF6C8E1)), // Color for the button text
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
 }

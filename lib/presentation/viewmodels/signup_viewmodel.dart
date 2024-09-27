@@ -38,6 +38,8 @@ class SignupViewmodel extends StateNotifier<AsyncValue<ApiResponse>> {
     );
 
     final result = await _registerAccount(account);
+
+    print('$result');
     result.fold(
           (failure) => print('Error: $failure'),
           (apiResponse) => print('Success: ${apiResponse.message}'),

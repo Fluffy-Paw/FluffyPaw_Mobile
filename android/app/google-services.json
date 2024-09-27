@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "126308072976",
+    "project_id": "capstone-c6fef",
+    "storage_bucket": "capstone-c6fef.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:126308072976:android:01c763c8fe82bb0e2a5495",
+        "android_client_info": {
+          "package_name": "com.example.fluffypawmobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcP-WmfiOidvW8LXGd1Oll832Dt18OFbg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -10,6 +10,7 @@ class Account{
   final String? address;
   final DateTime? dob;
   final String? gender;
+  final String? avatar;
 
   const Account({
     required this.phone,
@@ -21,6 +22,7 @@ class Account{
     this.address,
     this.dob,
     this.gender,
+    this.avatar
   });
 
 

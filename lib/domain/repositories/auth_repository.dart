@@ -3,6 +3,7 @@ import 'package:fluffypawmobile/core/error/failures.dart';
 import 'package:fluffypawmobile/data/models/account_model.dart';
 import 'package:fluffypawmobile/data/models/api_response.dart';
 import 'package:fluffypawmobile/data/models/login_model.dart';
+import 'package:fluffypawmobile/data/models/pet_owner_model.dart';
 import 'package:fluffypawmobile/domain/entities/Account.dart';
 
 abstract class AuthRepository {

@@ -42,3 +42,7 @@ class NotFoundFailure extends Failures {
   const NotFoundFailure({String message = 'Resource not found'})
       : super(message: message);
 }
+class GeneralFailure extends Failures {
+  final String message;
+  GeneralFailure({required this.message}) : super(message: 'An Error Occur');
+}
