@@ -28,7 +28,7 @@ class AccountModel extends Account {
   factory AccountModel.fromJson(Map<String, dynamic> json) {
     return AccountModel(
       phone: json['phone'] as String? ?? '',  // Use empty string if null
-      userName: json['userName'] as String? ?? '',  // Handle null case
+      userName: json['username'] as String? ?? '',  // Handle null case
       password: json['password'] as String? ?? '',
       confirmPassword: json['comfirmPassword'] as String? ?? '',  // Handle typo or null case
       email: json['email'] as String? ?? '',

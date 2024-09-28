@@ -1,4 +1,8 @@
+import 'package:fluffypawmobile/data/models/pet_model.dart';
 import 'package:fluffypawmobile/dependency_injection/dependency_injection.dart';
+import 'package:fluffypawmobile/presentation/pages/loading_screen/loading_screen.dart';
+import 'package:fluffypawmobile/presentation/pages/user_profile/profile_navigator.dart';
+import 'package:fluffypawmobile/presentation/state/pet_state.dart';
 import 'package:fluffypawmobile/presentation/viewmodels/home_viewmodel.dart';
 import 'package:fluffypawmobile/ui/appTheme/appTheme.dart';
 import 'package:flutter/material.dart';
@@ -15,9 +19,14 @@ class Home extends ConsumerStatefulWidget {
 class _HomeState extends ConsumerState<Home> {
   @override
   Widget build(BuildContext context) {
-    // Lấy HomeState từ HomeViewModel thông qua Provider
+    // Lấy HomeState và PetState từ ViewModel thông qua Provider
     final homeState = ref.watch(homeViewModelProvider);
     final homeViewModel = ref.read(homeViewModelProvider.notifier);
+    final petState = ref.watch(petViewModelProvider);  // Theo dõi trạng thái thú cưng
+
+    if (homeState.isLoading || petState.isLoading) {
+      return LoadingScreen(); // Hiển thị màn hình loading khi dữ liệu đang được tải
+    }
 
     return Scaffold(
       backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
@@ -36,7 +45,7 @@ class _HomeState extends ConsumerState<Home> {
                     children: [
                       _buildHeader(context, homeState, homeViewModel),
                       _buildSearchBar(),
-                      _buildPetCard(context),
+                      _buildPetCard(context, petState),  // Truyền petState vào để hiển thị thú cưng
                       _buildQuickActions(context),
                       _buildSpecialistSection(),
                     ],
@@ -49,6 +58,169 @@ class _HomeState extends ConsumerState<Home> {
         ),
       ),
     );
+  }
+
+  // Cập nhật phương thức _buildPetCard
+  Widget _buildPetCard(BuildContext context, PetState petState) {
+    if (petState.pets.isEmpty) {
+      // Nếu không có thú cưng nào, hiển thị thẻ "Thêm thú cưng mới"
+      return Container(
+        margin: EdgeInsets.fromLTRB(20, 0, 20, 24),
+        height: 150,
+        child: _buildAddNewPetCard(),
+      );
+    }
+
+    // Nếu có thú cưng, hiển thị danh sách thú cưng
+    return Container(
+      margin: EdgeInsets.fromLTRB(20, 0, 20, 24),
+      height: 150,
+      child: PageView(
+        children: petState.pets.map((pet) {
+          return _buildPetCardItem(pet);  // Tạo thẻ cho mỗi thú cưng
+        }).toList()
+          ..add(_buildAddNewPetCard()),  // Thêm thẻ "Thêm thú cưng mới" vào cuối
+      ),
+    );
+  }
+
+  // Phương thức tạo thẻ "Thêm thú cưng mới"
+  Widget _buildAddNewPetCard() {
+    return Container(
+      padding: EdgeInsets.fromLTRB(19.5, 14.5, 19.5, 14.5),
+      decoration: BoxDecoration(
+        color: Color(0xFFECEFF2),
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x05323247),
+            offset: Offset(0, 3),
+            blurRadius: 7.5,
+          ),
+          BoxShadow(
+            color: Color(0x0D0C1A4B),
+            offset: Offset(0, 0),
+            blurRadius: 1.875,
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.add,
+            color: Color(0xFF333333),
+            size: 30,
+          ),
+          SizedBox(width: 10),
+          Text(
+            'Thêm thú cưng mới',
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              color: Color(0xFF333333),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Phương thức tạo thẻ cho mỗi thú cưng
+  Widget _buildPetCardItem(PetModel pet) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(19.5, 14.5, 19.5, 14.5),
+      decoration: BoxDecoration(
+        color: Color(0xFFF6C8E1),
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x05323247),
+            offset: Offset(0, 3),
+            blurRadius: 7.5,
+          ),
+          BoxShadow(
+            color: Color(0x0D0C1A4B),
+            offset: Offset(0, 0),
+            blurRadius: 1.875,
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Expanded widget to prevent text overflow
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Pet name
+                Text(
+                  pet.name,
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 20,
+                    height: 1.5,
+                    color: Color(0xFF333333),
+                  ),
+                  overflow: TextOverflow.ellipsis, // Handle long text gracefully
+                ),
+                // Pet category
+                Text(
+                  pet.petCategory ?? "meo",
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 14,
+                    height: 1.4,
+                    color: Color(0xFF333333),
+                  ),
+                  overflow: TextOverflow.ellipsis, // Prevent text overflow
+                ),
+              ],
+            ),
+          ),
+          // Image
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: pet.image != null
+                  ? Image.network(
+                pet.image ?? "https://logowik.com/content/uploads/images/cat8600.jpg",  // Use image from the pet object
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.network(
+                    'https://logowik.com/content/uploads/images/cat8600.jpg',
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
+                  );
+                },
+              )
+                  : Image.asset(
+                'https://logowik.com/content/uploads/images/cat8600.jpg',  // Fallback image
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+
   }
 
   Widget _buildHeader(BuildContext context, HomeState state, HomeViewModel viewModel) {
@@ -80,36 +252,31 @@ class _HomeState extends ConsumerState<Home> {
               ),
             ],
           ),
-          // IconButton(
-          //   icon: Icon(Icons.notifications),
-          //   onPressed: () {
-          //     viewModel.goToNotifications(context); // Gọi hàm từ HomeViewModel
-          //   },
-          //),
         ],
       ),
     );
   }
+
   Widget _buildSearchBar() {
     return Container(
       margin: EdgeInsets.fromLTRB(20, 0, 20, 24),
       padding: EdgeInsets.symmetric(horizontal: 13.9),
       height: 40,
       decoration: BoxDecoration(
-        color: Color(0xFFFFFFFF), // Đổi màu nền sang trắng để nổi bật hơn
+        color: Color(0xFFFFFFFF),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1), // Màu bóng nhạt
-            blurRadius: 6, // Độ mờ của bóng
-            offset: Offset(0, 3), // Đổ bóng nhẹ xuống dưới
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 6,
+            offset: Offset(0, 3),
           ),
         ],
       ),
       child: Row(
         children: [
           Icon(
-            Icons.search, // Thay bằng icon tìm kiếm mặc định của Flutter
+            Icons.search,
             color: Color(0xFF838383),
             size: 20,
           ),
@@ -118,7 +285,7 @@ class _HomeState extends ConsumerState<Home> {
             'Tìm kiếm',
             style: GoogleFonts.poppins(
               fontWeight: FontWeight.w400,
-              fontSize: 14, // Điều chỉnh kích thước text cho vừa vặn hơn
+              fontSize: 14,
               color: Color(0xFF838383),
             ),
           ),
@@ -126,125 +293,7 @@ class _HomeState extends ConsumerState<Home> {
       ),
     );
   }
-  Widget _buildPetCard(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.fromLTRB(20, 0, 20, 24),
-      height: 150, // Chiều cao tương ứng với thẻ ban đầu
-      child: PageView(
-        children: [
-          // Thẻ Pet hiện tại
-          Container(
-            padding: EdgeInsets.fromLTRB(19.5, 14.5, 19.5, 14.5),
-            decoration: BoxDecoration(
-              color: Color(0xFFF6C8E1),
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0x05323247),
-                  offset: Offset(0, 3),
-                  blurRadius: 7.5,
-                ),
-                BoxShadow(
-                  color: Color(0x0D0C1A4B),
-                  offset: Offset(0, 0),
-                  blurRadius: 1.875,
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Mận',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 20,
-                        height: 1.5,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
-                    Text(
-                      'Mèo | Mèo Mướp',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w400,
-                        fontSize: 14,
-                        height: 1.4,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
-                  ],
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle, // Đảm bảo Container có hình tròn
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2), // Màu bóng
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: Offset(0, 3), // Đổ bóng xuống và sang bên
-                      ),
-                    ],
-                  ),
-                  child: ClipOval(
-                    child: Image.asset(
-                      'assets/images/cat.jpeg',
-                      width: 80, // Điều chỉnh kích thước hình ảnh
-                      height: 80,
-                      fit: BoxFit.cover, // Cắt hình ảnh phù hợp
-                    ),
-                  ),
-                ),
 
-              ],
-            ),
-          ),
-          // Thẻ thêm thú cưng mới
-          Container(
-            padding: EdgeInsets.fromLTRB(19.5, 14.5, 19.5, 14.5),
-            decoration: BoxDecoration(
-              color: Color(0xFFECEFF2), // Màu nền khác biệt cho thẻ thêm mới
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0x05323247),
-                  offset: Offset(0, 3),
-                  blurRadius: 7.5,
-                ),
-                BoxShadow(
-                  color: Color(0x0D0C1A4B),
-                  offset: Offset(0, 0),
-                  blurRadius: 1.875,
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.add, // Biểu tượng dấu cộng
-                  color: Color(0xFF333333),
-                  size: 30, // Điều chỉnh kích thước biểu tượng cho phù hợp
-                ),
-                SizedBox(width: 10), // Khoảng cách giữa biểu tượng và text
-                Text(
-                  'Thêm thú cưng mới',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16, // Điều chỉnh kích thước font chữ cho phù hợp
-                    color: Color(0xFF333333),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
   Widget _buildQuickActions(BuildContext context) {
     return Container(
       margin: EdgeInsets.fromLTRB(20, 0, 20, 24),
@@ -252,15 +301,16 @@ class _HomeState extends ConsumerState<Home> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildActionItem(context, 'Dinh Dưỡng',
-              'assets/vectors/pet_app_dashboard_cards_x2.svg'),
+              'assets/svg/nutrition_icon.svg'),
           _buildActionItem(
-              context, 'Sức Khoẻ', 'assets/vectors/ellipse_fill_x2.svg'),
+              context, 'Sức Khoẻ', 'assets/svg/health_vet.svg'),
           _buildActionItem(
-              context, 'Hoạt Động', 'assets/vectors/container_x2.svg'),
+              context, 'Hoạt Động', 'assets/svg/pet_walk.svg'),
         ],
       ),
     );
   }
+
   Widget _buildActionItem(
       BuildContext context, String title, String assetPath) {
     return Container(
@@ -298,6 +348,7 @@ class _HomeState extends ConsumerState<Home> {
       ),
     );
   }
+
   Widget _buildSpecialistSection() {
     return Container(
       margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
@@ -391,6 +442,7 @@ class _HomeState extends ConsumerState<Home> {
       ),
     );
   }
+
   Widget _buildBottomNavBar(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
@@ -417,7 +469,7 @@ class _HomeState extends ConsumerState<Home> {
                           MaterialPageRoute(builder: (context) => Home()));
                     },
                     child: _buildNavItem(
-                        'Home', 'assets/vectors/vector_24_x2.svg', true),
+                        'Home', 'assets/svg/home_icon.svg', true),
                   ),
                 ),
                 Expanded(
@@ -427,19 +479,19 @@ class _HomeState extends ConsumerState<Home> {
                             MaterialPageRoute(builder: (context) => Home()));
                       },
                       child: _buildNavItem(
-                          'Service', 'assets/vectors/vector_27_x2.svg', false),
+                          'Service', 'assets/svg/service_icon.svg', false),
                     )),
                 Expanded(
                     child: _buildNavItem('Message',
-                        'assets/vectors/comment_filled_1_x2.svg', false)),
+                        'assets/svg/message.svg', false)),
                 Expanded(
                     child: TextButton(
                       onPressed: () {
-                        // Navigator.push(context,
-                        //     MaterialPageRoute(builder: (context) => Account()));
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) => ProfileNavigator()));
                       },
-                      child: _buildNavItem('Account',
-                          'assets/vectors/user_regular_x2.svg', false),
+                      child: _buildNavItem(
+                          'Account', 'assets/svg/account_icon.svg', false),
                     )),
               ],
             )),
@@ -469,8 +521,4 @@ class _HomeState extends ConsumerState<Home> {
       ],
     );
   }
-
-
-
-// Các hàm còn lại tương tự nhưng sẽ gọi từ viewModel
 }

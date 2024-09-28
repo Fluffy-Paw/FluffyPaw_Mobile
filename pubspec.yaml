@@ -75,6 +75,13 @@ flutter:
     - assets/svg/auth_back_icon.svg
     - assets/svg/fluffypaw_logo.svg
     - assets/gif/L0OSegj9t4wzZwLwyD.gif
+    - assets/svg/account_icon.svg
+    - assets/svg/home_icon.svg
+    - assets/svg/message.svg
+    - assets/svg/service_icon.svg
+    - assets/svg/health_vet.svg
+    - assets/svg/nutrition_icon.svg
+    - assets/svg/pet_walk.svg
 
 
 
