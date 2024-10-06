@@ -59,5 +59,13 @@
     	    </array>
     	  </dict>
     	</array>
+
+	<!-- Permissions for Camera and Photo Library Access -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Ứng dụng cần quyền truy cập vào thư viện ảnh để chọn ảnh thú cưng.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Ứng dụng cần quyền truy cập vào máy ảnh để chụp ảnh thú cưng.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Ứng dụng cần quyền truy cập vào microphone để thu âm.</string>
 </dict>
 </plist>
