@@ -29,9 +29,9 @@ class UserProfileViewModel extends StateNotifier<UserProfileState>{
           state = state.copyWith(
               isLoading: false,
               fullName: petOwner.fullName,
-              email: petOwner.accountModel.email ?? "example@gmail.com",
-            avatar: petOwner.accountModel.avatar,
-              userName: petOwner.accountModel.userName,
+              email: petOwner.email ?? "example@gmail.com",
+            avatar: petOwner.avatar,
+
             phone: petOwner.phone,
             address: petOwner.address
           );

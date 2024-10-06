@@ -1,4 +1,5 @@
 import 'package:fluffypawmobile/core/error/failures.dart';
+import 'package:fluffypawmobile/presentation/pages/login/login_screen.dart';
 import 'package:fluffypawmobile/presentation/pages/signup/component/show_custom_snack_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -90,6 +91,9 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
                       SchedulerBinding.instance.addPostFrameCallback((_) {
                         if (mounted) {
                           showCustomSnackBar(context, user.message, Colors.green);
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (_) => LogIn()),
+                          );
                         }
                       });
                     }

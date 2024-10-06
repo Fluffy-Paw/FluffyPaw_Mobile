@@ -1,44 +1,44 @@
+import 'package:fluffypawmobile/domain/entities/behavior_category.dart';
 import 'package:fluffypawmobile/domain/entities/pet.dart';
+import 'package:fluffypawmobile/domain/entities/pet_type.dart';
 
 class PetModel extends Pet {
-  final String? petCategory;
-  final String? behaviorCategory;
-
   PetModel({
     required int id,
     required String name,
     String? image,
     String? sex,
     double? weight,
-    this.petCategory,
-    this.behaviorCategory,
-    String? status,
-    int? petOwnerId,
-    int? petCategoryId,
-    int? petTypeId,
-    int? behaviorCategoryId,
     DateTime? dob,
+    int? age,
     String? allergy,
     String? microchipNumber,
-    required String description,
+    String? description,
     bool? isNeuter,
+    PetType? petType,
+    dynamic behaviorCategory,
   }) : super(
-    id: id,
-    name: name,
-    image: image,
-    sex: sex,
-    weight: weight,
-    status: status,
-    petOwnerId: petOwnerId,
-    petCategoryId: petCategoryId,
-    petTypeId: petTypeId,
-    behaviorCategoryId: behaviorCategoryId,
-    dob: dob,
-    allergy: allergy,
-    microchipNumber: microchipNumber,
-    description: description,
-    isNeuter: isNeuter,
-  );
+          id: id,
+          name: name,
+          image: image,
+          sex: sex,
+          weight: weight,
+          age: age,
+          dob: dob,
+          allergy: allergy,
+          microchipNumber: microchipNumber,
+          description: description ?? '',
+          isNeuter: isNeuter,
+          petType: petType,
+          // Handle both cases for behaviorCategory
+          behaviorCategory: behaviorCategory is String
+              ? BehaviorCategory(
+                  id: 0,
+                  name:
+                      behaviorCategory) // Assign a default id of 0 for the string case
+              : behaviorCategory
+                  as BehaviorCategory, // Ensure it is BehaviorCategory in other cases
+        );
 
   factory PetModel.fromJson(Map<String, dynamic> json) {
     return PetModel(
@@ -47,21 +47,19 @@ class PetModel extends Pet {
       image: json['image'],
       sex: json['sex'],
       weight: json['weight']?.toDouble(),
-      petCategory: json['petCategory'],
-      behaviorCategory: json['behaviorCategory'],
-      description: json['description'] ?? '',  // Assuming description is required
+      description: json['description'] ?? '',
+      // Assuming description is required
+      microchipNumber: json['microchipNumber'],
+      allergy: json['allergy'],
+      dob: json['dob'] != null ? DateTime.parse(json['dob']) : null,
+      petType:
+          json['petType'] != null ? PetType.fromJson(json['petType']) : null,
+      // Handle both the case where behaviorCategory is an object or a string
+      behaviorCategory: json['behaviorCategory'] is Map<String, dynamic>
+          ? BehaviorCategory.fromJson(json['behaviorCategory'])
+          : json['behaviorCategory'] is String
+              ? json['behaviorCategory'] // Handle as string
+              : null,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'image': image,
-      'sex': sex,
-      'weight': weight,
-      'petCategory': petCategory,
-      'behaviorCategory': behaviorCategory,
-    };
   }
 }

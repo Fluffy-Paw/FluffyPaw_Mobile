@@ -1,3 +1,6 @@
+import 'package:fluffypawmobile/domain/entities/behavior_category.dart';
+import 'package:fluffypawmobile/domain/entities/pet_type.dart';
+
 class Pet {
   final int id;
   final int? petOwnerId;
@@ -11,9 +14,12 @@ class Pet {
   final DateTime? dob;
   final String? allergy;
   final String? microchipNumber;
-  final String description;
+  final String? description;
   final bool? isNeuter;
   final String? status;
+  final int? age;
+  final PetType? petType;
+  final BehaviorCategory? behaviorCategory;
 
   // Constructor
   Pet({
@@ -32,5 +38,8 @@ class Pet {
     required this.description,
     this.isNeuter,
     this.status,
+    this.age,
+    this.petType,
+    this.behaviorCategory
   });
 }

@@ -5,33 +5,7 @@ import 'package:fluffypawmobile/data/models/pet_model.dart';
 import 'package:fluffypawmobile/domain/usecases/pet_account.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class PetViewModel extends StateNotifier<PetState> {
-  final PetAccount petAccount;
 
-  PetViewModel(this.petAccount) : super(PetState.initial()) {
-    loadPetList();
-  }
-
-  Future<void> loadPetList() async {
-    state = state.copyWith(isLoading: true);
-    final Either<Failures, List<PetModel>> result = await petAccount(NoParams());
-    result.fold(
-          (failure) {
-        state = state.copyWith(
-          isLoading: false,
-          errorMessage: 'Failed to load pet list: ${failure.message}',
-        );
-      },
-          (pets) {
-        state = state.copyWith(
-          isLoading: false,
-          pets: pets,
-          errorMessage: null,
-        );
-      },
-    );
-  }
-}
 
 // Cập nhật PetState (nếu cần)
 class PetState {

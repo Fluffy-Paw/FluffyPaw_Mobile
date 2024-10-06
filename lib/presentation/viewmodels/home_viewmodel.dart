@@ -27,7 +27,7 @@ class HomeViewModel extends StateNotifier<HomeState> {
           state = state.copyWith(
               isLoading: false,
               userName: petOwner.fullName,
-              avatarUrl: petOwner.accountModel.avatar ?? "https://static.vecteezy.com/system/resources/thumbnails/002/318/271/small_2x/user-profile-icon-free-vector.jpg",
+              avatarUrl: petOwner.avatar ?? "https://static.vecteezy.com/system/resources/thumbnails/002/318/271/small_2x/user-profile-icon-free-vector.jpg",
               greeting: "Xin chào, ${petOwner.fullName}"
           );
         }

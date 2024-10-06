@@ -1,5 +1,7 @@
 import 'package:fluffypawmobile/data/models/pet_model.dart';
 import 'package:fluffypawmobile/dependency_injection/dependency_injection.dart';
+import 'package:fluffypawmobile/presentation/pages/Pet/pet_form.dart';
+import 'package:fluffypawmobile/presentation/pages/Pet/pet_profile.dart';
 import 'package:fluffypawmobile/presentation/pages/loading_screen/loading_screen.dart';
 import 'package:fluffypawmobile/presentation/pages/user_profile/profile_navigator.dart';
 import 'package:fluffypawmobile/presentation/state/pet_state.dart';
@@ -67,7 +69,7 @@ class _HomeState extends ConsumerState<Home> {
       return Container(
         margin: EdgeInsets.fromLTRB(20, 0, 20, 24),
         height: 150,
-        child: _buildAddNewPetCard(),
+        child: _buildAddNewPetCard(context),
       );
     }
 
@@ -79,149 +81,169 @@ class _HomeState extends ConsumerState<Home> {
         children: petState.pets.map((pet) {
           return _buildPetCardItem(pet);  // Tạo thẻ cho mỗi thú cưng
         }).toList()
-          ..add(_buildAddNewPetCard()),  // Thêm thẻ "Thêm thú cưng mới" vào cuối
+          ..add(_buildAddNewPetCard(context)),  // Thêm thẻ "Thêm thú cưng mới" vào cuối
       ),
     );
   }
 
   // Phương thức tạo thẻ "Thêm thú cưng mới"
-  Widget _buildAddNewPetCard() {
-    return Container(
-      padding: EdgeInsets.fromLTRB(19.5, 14.5, 19.5, 14.5),
-      decoration: BoxDecoration(
-        color: Color(0xFFECEFF2),
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x05323247),
-            offset: Offset(0, 3),
-            blurRadius: 7.5,
-          ),
-          BoxShadow(
-            color: Color(0x0D0C1A4B),
-            offset: Offset(0, 0),
-            blurRadius: 1.875,
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.add,
-            color: Color(0xFF333333),
-            size: 30,
-          ),
-          SizedBox(width: 10),
-          Text(
-            'Thêm thú cưng mới',
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-              color: Color(0xFF333333),
+  Widget _buildAddNewPetCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        // Thực hiện điều hướng đến trang PetForm khi nhấn vào
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => PetForm()),
+        );
+      },
+      child: Container(
+        padding: EdgeInsets.fromLTRB(19.5, 14.5, 19.5, 14.5),
+        decoration: BoxDecoration(
+          color: Color(0xFFECEFF2),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x05323247),
+              offset: Offset(0, 3),
+              blurRadius: 7.5,
             ),
-          ),
-        ],
+            BoxShadow(
+              color: Color(0x0D0C1A4B),
+              offset: Offset(0, 0),
+              blurRadius: 1.875,
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.add,
+              color: Color(0xFF333333),
+              size: 30,
+            ),
+            SizedBox(width: 10),
+            Text(
+              'Thêm thú cưng mới',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+                color: Color(0xFF333333),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+
 
   // Phương thức tạo thẻ cho mỗi thú cưng
   Widget _buildPetCardItem(PetModel pet) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(19.5, 14.5, 19.5, 14.5),
-      decoration: BoxDecoration(
-        color: Color(0xFFF6C8E1),
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x05323247),
-            offset: Offset(0, 3),
-            blurRadius: 7.5,
+    return GestureDetector(
+      onTap: () {
+        // Navigate to PetProfile and pass the pet ID
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PetProfile(petId: pet.id), // Pass the pet ID to the profile page
           ),
-          BoxShadow(
-            color: Color(0x0D0C1A4B),
-            offset: Offset(0, 0),
-            blurRadius: 1.875,
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Expanded widget to prevent text overflow
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Pet name
-                Text(
-                  pet.name,
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 20,
-                    height: 1.5,
-                    color: Color(0xFF333333),
-                  ),
-                  overflow: TextOverflow.ellipsis, // Handle long text gracefully
-                ),
-                // Pet category
-                Text(
-                  pet.petCategory ?? "meo",
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w400,
-                    fontSize: 14,
-                    height: 1.4,
-                    color: Color(0xFF333333),
-                  ),
-                  overflow: TextOverflow.ellipsis, // Prevent text overflow
-                ),
-              ],
+        );
+      },
+      child: Container(
+        padding: EdgeInsets.fromLTRB(19.5, 14.5, 19.5, 14.5),
+        decoration: BoxDecoration(
+          color: Color(0xFFF6C8E1),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x05323247),
+              offset: Offset(0, 3),
+              blurRadius: 7.5,
             ),
-          ),
-          // Image
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  spreadRadius: 2,
-                  blurRadius: 5,
-                  offset: Offset(0, 3),
-                ),
-              ],
+            BoxShadow(
+              color: Color(0x0D0C1A4B),
+              offset: Offset(0, 0),
+              blurRadius: 1.875,
             ),
-            child: ClipOval(
-              child: pet.image != null
-                  ? Image.network(
-                pet.image ?? "https://logowik.com/content/uploads/images/cat8600.jpg",  // Use image from the pet object
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Image.network(
-                    'https://logowik.com/content/uploads/images/cat8600.jpg',
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
-                  );
-                },
-              )
-                  : Image.asset(
-                'https://logowik.com/content/uploads/images/cat8600.jpg',  // Fallback image
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Expanded widget to prevent text overflow
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Pet name
+                  Text(
+                    pet.name,
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 20,
+                      height: 1.5,
+                      color: Color(0xFF333333),
+                    ),
+                    overflow: TextOverflow.ellipsis, // Handle long text gracefully
+                  ),
+                  // Pet category
+                  Text(
+                    pet.petType?.petCategory.name ?? "meo",
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 14,
+                      height: 1.4,
+                      color: Color(0xFF333333),
+                    ),
+                    overflow: TextOverflow.ellipsis, // Prevent text overflow
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+            // Image
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: pet.image != null
+                    ? Image.network(
+                  pet.image ?? "https://logowik.com/content/uploads/images/cat8600.jpg",  // Use image from the pet object
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.network(
+                      'https://logowik.com/content/uploads/images/cat8600.jpg',
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                    );
+                  },
+                )
+                    : Image.network(
+                  'https://logowik.com/content/uploads/images/cat8600.jpg',  // Fallback image
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
-
-
   }
+
 
   Widget _buildHeader(BuildContext context, HomeState state, HomeViewModel viewModel) {
     return Padding(
