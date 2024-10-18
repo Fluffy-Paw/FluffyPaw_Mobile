@@ -12,11 +12,10 @@ class PetOwnerDetail implements UseCase<PetOwner, NoParams>{
 
   @override
   Future<Either<Failures, PetOwner>> call(NoParams params) async{
-    // TODO: implement call
     final result = await petOwnerRepository.getPetOwnerInfo();
     return result.fold(
           (failure) => Left(failure),
-          (apiResponse) => Right(apiResponse.data!), // Truy xuất PetOwner từ ApiResponse
+          (apiResponse) => Right(apiResponse.data!),
     );
   }
 

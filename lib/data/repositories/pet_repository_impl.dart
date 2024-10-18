@@ -125,5 +125,21 @@ class PetRepositoryImpl implements PetRepository{
       return Left(ServerFailure(message: e.toString()));
     }
   }
+  @override
+  Future<Either<Failures, ApiResponse<bool>>> deletePet(int id) async {
+    try {
+      final token = await authService.getToken();
+      if (token == null) {
+        return Left(GeneralFailure(message: 'Token not found'));
+      }
+      final result = await petRemoteDataSource.deletePet(token, id);
+      return Right(result);
+    } on ServerException {
+      return Left(ServerFailure());
+    } catch (e) {
+      return Left(ServerFailure(message: '${e.toString()}'));
+    }
+  }
+
 
 }

@@ -14,4 +14,6 @@ abstract class PetRepository{
   Future<Either<Failures, ApiResponse<List<BehaviorCategory>>>> getBehaviorCategory();
   Future<Either<Failures, ApiResponse<bool>>> addPet(Map<String, dynamic> petData);
   Future<Either<Failures, ApiResponse<bool>>> updatePet(int id, Map<String, dynamic> petData);
+  Future<Either<Failures, ApiResponse<bool>>> deletePet(int id);
+
 }

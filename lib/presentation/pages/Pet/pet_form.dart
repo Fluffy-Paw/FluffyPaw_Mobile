@@ -32,8 +32,9 @@ class _PetFormState extends ConsumerState<PetForm> {
   bool isNeuter = false;
   File? _image;
 
-  bool isDogSelected = false;
+  bool isDogSelected = true;
   bool isCatSelected = false;
+  bool isLoadingPetTypes = false;
 
   int? selectedPetTypeId;
   int? selectedBehaviorCategoryId;
@@ -64,8 +65,17 @@ class _PetFormState extends ConsumerState<PetForm> {
   }
 
   Future<void> _loadPetTypes(int id) async {
+    setState(() {
+      isLoadingPetTypes = true;
+      selectedPetTypeId = null; // Reset selection when changing pet type
+    });
+
     final petCategoryViewModel = ref.read(petFormViewModelProvider.notifier);
     await petCategoryViewModel.getPetTypeWithId(id);
+
+    setState(() {
+      isLoadingPetTypes = false;
+    });
   }
 
   Future<void> _loadBehaviorCategories() async {
@@ -120,26 +130,26 @@ class _PetFormState extends ConsumerState<PetForm> {
                     Checkbox(
                       value: isDogSelected,
                       onChanged: (bool? value) {
-                        setState(() {
-                          isDogSelected = value ?? false;
-                          isCatSelected = false;
-                          if (isDogSelected) {
-                            _loadPetTypes(1);
-                          }
-                        });
+                        if (value == true && !isDogSelected) {
+                          setState(() {
+                            isDogSelected = true;
+                            isCatSelected = false;
+                          });
+                          _loadPetTypes(1);
+                        }
                       },
                     ),
                     Text("Chó"),
                     Checkbox(
                       value: isCatSelected,
                       onChanged: (bool? value) {
-                        setState(() {
-                          isCatSelected = value ?? false;
-                          isDogSelected = false;
-                          if (isCatSelected) {
-                            _loadPetTypes(2);
-                          }
-                        });
+                        if (value == true && !isCatSelected) {
+                          setState(() {
+                            isCatSelected = true;
+                            isDogSelected = false;
+                          });
+                          _loadPetTypes(2);
+                        }
                       },
                     ),
                     Text("Mèo"),
@@ -147,49 +157,68 @@ class _PetFormState extends ConsumerState<PetForm> {
                 ),
                 SizedBox(height: 10),
 
-                // Dropdown for Pet Type
+                // Pet Type Dropdown with loading indicator
                 if (isDogSelected || isCatSelected)
-                  petCategoryViewModel.when(
+                  isLoadingPetTypes
+                      ? Center(
+                    child: Column(
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 8),
+                        Text("Đang tải danh sách giống..."),
+                      ],
+                    ),
+                  )
+                      : petCategoryViewModel.when(
                     data: (_) {
-                      final petTypes =
-                          ref.read(petFormViewModelProvider.notifier).petTypes;
+                      final petTypes = ref.read(petFormViewModelProvider.notifier).petTypes;
 
-                      // Đảm bảo giá trị được chọn hợp lệ
-                      if (selectedPetTypeId != null &&
-                          petTypes
-                              .every((type) => type.id != selectedPetTypeId)) {
-                        selectedPetTypeId = null;
-                      }
-
-                      return DropdownButtonFormField<int>(
-                        value: selectedPetTypeId,
-                        items:
-                            petTypes.toSet().map<DropdownMenuItem<int>>((type) {
+                      List<DropdownMenuItem<int>> petTypeItems = [
+                        DropdownMenuItem<int>(
+                          value: 0,
+                          child: Text(isDogSelected ? 'Chọn giống chó' : 'Chọn giống mèo'),
+                        ),
+                        ...petTypes.map<DropdownMenuItem<int>>((type) {
                           return DropdownMenuItem<int>(
                             value: type.id,
                             child: Text(type.name),
                           );
                         }).toList(),
+                      ];
+
+                      return DropdownButtonFormField<int>(
+                        value: selectedPetTypeId ?? 0,
+                        items: petTypeItems,
                         onChanged: (value) {
                           setState(() {
                             selectedPetTypeId = value;
                           });
                         },
-                        decoration: InputDecoration(labelText: "Pet Type"),
-                        hint: Text(petTypes.isEmpty
-                            ? "No pet types available"
-                            : "Select a pet type"),
+                        decoration: InputDecoration(
+                          labelText: isDogSelected ? "Giống chó" : "Giống mèo",
+                        ),
                         validator: (value) {
-                          if (value == null) {
-                            return 'Please select a pet type';
+                          if (value == null || value == 0) {
+                            return isDogSelected
+                                ? 'Vui lòng chọn giống chó'
+                                : 'Vui lòng chọn giống mèo';
                           }
                           return null;
                         },
                       );
                     },
-                    loading: () => CircularProgressIndicator(),
-                    error: (error, _) => Text("Failed to load pet types"),
+                    loading: () => Center(
+                      child: Column(
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 8),
+                          Text("Đang tải danh sách giống..."),
+                        ],
+                      ),
+                    ),
+                    error: (error, _) => Text("Không thể tải danh sách giống. Vui lòng thử lại."),
                   ),
+
 
                 SizedBox(height: 10),
 
@@ -365,34 +394,23 @@ class _PetFormState extends ConsumerState<PetForm> {
                           "image": _image != null ? _image!.path : "",
                           "petTypeId": selectedPetTypeId ?? 0,
                           "behaviorCategoryId": selectedBehaviorCategoryId ?? 0,
-                          "name": nameController.text.isNotEmpty
-                              ? nameController.text
-                              : "",
-                          "sex": sexController.text.isNotEmpty
-                              ? sexController.text
-                              : "",
+                          "name": nameController.text.isNotEmpty ? nameController.text : "",
+                          "sex": sexController.text.isNotEmpty ? sexController.text : "",
                           "weight": double.tryParse(weightController.text) ?? 0,
-                          "dob": dobController.text.isNotEmpty
-                              ? dobController.text
-                              : "",
-                          "allergy": allergyController.text.isNotEmpty
-                              ? allergyController.text
-                              : "",
-                          "microchipNumber": microchipController.text.isNotEmpty
-                              ? microchipController.text
-                              : "",
-                          "description": descriptionController.text.isNotEmpty
-                              ? descriptionController.text
-                              : "",
+                          "dob": dobController.text.isNotEmpty ? dobController.text : "",
+                          "allergy": allergyController.text.isNotEmpty ? allergyController.text : "",
+                          "microchipNumber": microchipController.text.isNotEmpty ? microchipController.text : "",
+                          "description": descriptionController.text.isNotEmpty ? descriptionController.text : "",
                           "isNeuter": isNeuter,
                         };
 
+                        // Call ViewModel's submitForm method to add pet
                         addPetViewModel.submitForm(petData).then((_) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text('Pet added successfully!')));
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(builder: (_) => Home()),
-                          );
+
+                          // Pop the screen and return `true` to indicate success
+                          Navigator.pop(context, true);
                         }).catchError((error) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text('Error adding pet: $error')));

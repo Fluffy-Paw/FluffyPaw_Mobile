@@ -50,6 +50,7 @@ dependencies:
   encrypt: ^5.0.3
   image_picker: ^1.1.2
 
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -86,6 +87,12 @@ flutter:
     - assets/svg/pet_birthday.svg
     - assets/svg/pet_home_icon.svg
     - assets/svg/edit_pet_button.svg
+    - assets/svg/service_type.svg
+    - assets/png/pet-shop.png
+    - assets/svg/map.svg
+    - assets/svg/phone.svg
+    - assets/png/brand-image.png
+    - assets/png/phoneicon.png
 
 
 

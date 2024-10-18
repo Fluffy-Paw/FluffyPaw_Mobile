@@ -1,11 +1,14 @@
+import 'package:fluffypawmobile/data/models/vaccine_model.dart';
+
 class PetInfoState {
+  final int? petId;
   final bool isLoading;
   final String? errorMessage;
   final String petCategory;
   final String behaviorCategory;
   final String petTypeName;
   final String name;
-  final String image;
+  final String? image;
   final String sex;
   final double weight;
   final DateTime dob;
@@ -13,10 +16,13 @@ class PetInfoState {
   final String microchipNumber;
   final String description;
   final bool isNeuter;
+  final List<VaccineModel>? vaccineList;
+  final VaccineModel? selectedVaccine;
 
   PetInfoState({
     required this.isLoading,
     this.errorMessage,
+    this.petId,
     required this.petCategory,
     required this.behaviorCategory,
     required this.petTypeName,
@@ -29,6 +35,8 @@ class PetInfoState {
     required this.microchipNumber,
     required this.description,
     required this.isNeuter,
+    this.vaccineList,
+    this.selectedVaccine
   });
 
   factory PetInfoState.initial() {
@@ -39,7 +47,7 @@ class PetInfoState {
       behaviorCategory: '',
       petTypeName: '',
       name: '',
-      image: '',
+      image: 'https://logowik.com/content/uploads/images/cat8600.jpg',
       sex: '',
       weight: 0.0,
       dob: DateTime.now(),
@@ -47,6 +55,9 @@ class PetInfoState {
       microchipNumber: '',
       description: '',
       isNeuter: false,
+      vaccineList: [],
+      selectedVaccine: null,
+      petId: 0
     );
   }
 
@@ -65,6 +76,9 @@ class PetInfoState {
     String? microchipNumber,
     String? description,
     bool? isNeuter,
+    List<VaccineModel>? vaccineList,
+    VaccineModel? selectedVaccine,
+    int? petId
   }) {
     return PetInfoState(
       isLoading: isLoading ?? this.isLoading,
@@ -81,6 +95,9 @@ class PetInfoState {
       microchipNumber: microchipNumber ?? this.microchipNumber,
       description: description ?? this.description,
       isNeuter: isNeuter ?? this.isNeuter,
+      vaccineList: vaccineList ?? this.vaccineList,
+      selectedVaccine: selectedVaccine ?? this.selectedVaccine,
+      petId: petId ?? this.petId
     );
   }
 }

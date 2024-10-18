@@ -2,6 +2,7 @@ import 'package:fluffypawmobile/data/models/pet_model.dart';
 import 'package:fluffypawmobile/dependency_injection/dependency_injection.dart';
 import 'package:fluffypawmobile/presentation/pages/Pet/pet_form.dart';
 import 'package:fluffypawmobile/presentation/pages/Pet/pet_profile.dart';
+import 'package:fluffypawmobile/presentation/pages/booking/store_detail.dart';
 import 'package:fluffypawmobile/presentation/pages/loading_screen/loading_screen.dart';
 import 'package:fluffypawmobile/presentation/pages/user_profile/profile_navigator.dart';
 import 'package:fluffypawmobile/presentation/state/pet_state.dart';
@@ -47,9 +48,17 @@ class _HomeState extends ConsumerState<Home> {
                     children: [
                       _buildHeader(context, homeState, homeViewModel),
                       _buildSearchBar(),
-                      _buildPetCard(context, petState),  // Truyền petState vào để hiển thị thú cưng
-                      _buildQuickActions(context),
-                      _buildSpecialistSection(),
+                      _buildPetCard(context, petState),  
+                      _buildQuickActions(context, homeState),
+                      Text(
+                        'Dịch vụ được sử dụng nhiều nhất!',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                          color: Color(0xFF000000),
+                        ),
+                      ),
+                      _buildSpecialistSection(homeState, context),
                     ],
                   ),
                 ),
@@ -87,14 +96,20 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   // Phương thức tạo thẻ "Thêm thú cưng mới"
+  // Modify _buildAddNewPetCard to handle result from PetForm
   Widget _buildAddNewPetCard(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        // Thực hiện điều hướng đến trang PetForm khi nhấn vào
-        Navigator.push(
+      onTap: () async {
+        // Navigate to PetForm and await the result
+        final result = await Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => PetForm()),
         );
+
+        // If the result is true (pet was added), reload the pet data
+        if (result == true) {
+          ref.read(petViewModelProvider.notifier).loadPetList(); // Assuming loadPets() is the method to fetch pet data
+        }
       },
       child: Container(
         padding: EdgeInsets.fromLTRB(19.5, 14.5, 19.5, 14.5),
@@ -316,27 +331,32 @@ class _HomeState extends ConsumerState<Home> {
     );
   }
 
-  Widget _buildQuickActions(BuildContext context) {
+  Widget _buildQuickActions(BuildContext context, HomeState state) {
     return Container(
       margin: EdgeInsets.fromLTRB(20, 0, 20, 24),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildActionItem(context, 'Dinh Dưỡng',
-              'assets/svg/nutrition_icon.svg'),
-          _buildActionItem(
-              context, 'Sức Khoẻ', 'assets/svg/health_vet.svg'),
-          _buildActionItem(
-              context, 'Hoạt Động', 'assets/svg/pet_walk.svg'),
-        ],
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 2.5,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+        ),
+        itemCount: state.serviceTypeNames.length,
+        itemBuilder: (context, index) {
+          return _buildActionItem(
+            context,
+            state.serviceTypeNames[index],
+            'assets/svg/service_type.svg',
+          );
+        },
       ),
     );
   }
 
-  Widget _buildActionItem(
-      BuildContext context, String title, String assetPath) {
+  Widget _buildActionItem(BuildContext context, String title, String assetPath) {
     return Container(
-      width: (MediaQuery.of(context).size.width - 80) / 3,
       decoration: BoxDecoration(
         border: Border.all(color: Color(0xFFF7FAFC)),
         borderRadius: BorderRadius.circular(14),
@@ -354,116 +374,167 @@ class _HomeState extends ConsumerState<Home> {
           ),
         ],
       ),
-      child: Column(
-        children: [
-          SvgPicture.asset(assetPath),
-          SizedBox(height: 17.5),
-          Text(
-            title,
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-              color: Color(0xFF1B1B1B),
+      child: Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset(
+              assetPath,
+              width: 70,
+              height: 70,
             ),
-          ),
-        ],
+            SizedBox(width: 8),
+            Flexible( // Sử dụng Flexible để đảm bảo Text xuống dòng khi cần thiết
+              child: Text(
+                title,
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                  color: Color(0xFF1B1B1B),
+                ),
+                maxLines: 2, // Giới hạn tối đa 2 dòng
+                overflow: TextOverflow.ellipsis, // Cắt văn bản nếu vượt quá
+                softWrap: true, // Cho phép xuống dòng nếu cần thiết
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildSpecialistSection() {
+
+
+  Widget _buildSpecialistSection(HomeState state, BuildContext context) {
+    // Nếu danh sách cửa hàng rỗng, hiển thị thông báo
+    if (state.storeList == null || state.storeList!.isEmpty) {
+      return Center(
+        child: Text(
+          'No stores available',
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w500,
+            fontSize: 16,
+            color: Color(0xFF000000),
+          ),
+        ),
+      );
+    }
+
+    // Hiển thị danh sách cửa hàng
     return Container(
       margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Dịch vụ được sử dụng nhiều nhất!',
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w500,
-              fontSize: 16,
-              color: Color(0xFF000000),
-            ),
-          ),
           SizedBox(height: 16),
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              color: Color(0xFFFFFFFF),
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0x1A000000),
-                  offset: Offset(0, 0),
-                  blurRadius: 5,
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 90,
-                  height: 90,
-                  decoration: BoxDecoration(
-                    color: Color(0xFFC4C4C4),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Shinny Fur Saloon',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14,
-                        color: Color(0xFF1B1B1B),
-                      ),
-                    ),
-                    Text(
-                      'Veterinary Behavioral',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w400,
-                        fontSize: 12,
-                        color: Color(0xFF838383),
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      children: [
-                        SvgPicture.asset('assets/vectors/vector_62_x2.svg'),
-                        SizedBox(width: 5.3),
-                        Text(
-                          '4.8',
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w400,
-                            fontSize: 12,
-                            color: Color(0xFF838383),
-                          ),
-                        ),
-                        SizedBox(width: 16.4),
-                        SvgPicture.asset('assets/vectors/fimap_pin_x2.svg'),
-                        SizedBox(width: 4),
-                        Text(
-                          '1 km',
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w400,
-                            fontSize: 12,
-                            color: Color(0xFF838383),
-                          ),
-                        ),
-                      ],
+          // Hiển thị mỗi cửa hàng trong danh sách storeList
+          ...state.storeList!.map((store) {
+            return GestureDetector(
+              onTap: () {
+                // Điều hướng đến trang Service khi nhấn vào cửa hàng
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => StoreDetail(storeId: store.id,)), // Điều hướng đến trang Service
+                );
+              },
+              child: Container(
+                margin: EdgeInsets.only(bottom: 16),
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Color(0xFFFFFFFF),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x1A000000),
+                      offset: Offset(0, 0),
+                      blurRadius: 5,
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
+                child: Row(
+                  children: [
+                    // Hình ảnh của cửa hàng
+                    Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        color: Color(0xFFC4C4C4),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          store.file?.file ?? "https://png.pngtree.com/png-clipart/20190903/original/pngtree-store-icon-png-image_4419850.jpg",
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.network(
+                              'https://cdn-icons-png.freepik.com/512/3028/3028549.png',
+                              fit: BoxFit.cover,
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    // Thông tin của cửa hàng
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Tên cửa hàng
+                          Text(
+                            store.name,
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                              color: Color(0xFF1B1B1B),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          // Brand name của cửa hàng
+                          Text(
+                            store.brandName,
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w400,
+                              fontSize: 12,
+                              color: Color(0xFF838383),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          SizedBox(height: 8),
+                          // Đánh giá của cửa hàng
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.star,
+                                size: 16,
+                                color: Colors.yellow,
+                              ),
+                              SizedBox(width: 5.3),
+                              Text(
+                                store.totalRating?.toStringAsFixed(1) ?? '0.0',
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 12,
+                                  color: Color(0xFF838383),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
         ],
       ),
     );
   }
+
+
 
   Widget _buildBottomNavBar(BuildContext context) {
     return Container(

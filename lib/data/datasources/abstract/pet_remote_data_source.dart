@@ -12,6 +12,7 @@ abstract class PetRemoteDataSource{
   Future<ApiResponse<List<BehaviorCategory>>> getBehaviorCategory(String token);
   Future<ApiResponse<bool>> addPet(String token, Map<String, dynamic> petData);
   Future<ApiResponse<bool>> updatePet(String token,int id, Map<String, dynamic> petData);
+  Future<ApiResponse<bool>> deletePet(String token, int id);
 
 
 }

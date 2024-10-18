@@ -211,7 +211,7 @@ class PetRemoteDataSourceImpl implements PetRemoteDataSource {
 
       // Thêm file ảnh nếu có
       if (petData['image'] != null && petData['image'].isNotEmpty) {
-        var imageFile = await http.MultipartFile.fromPath('Image', petData['image']);
+        var imageFile = await http.MultipartFile.fromPath('PetImage', petData['image']);
         request.files.add(imageFile);
       }
 
@@ -232,22 +232,21 @@ class PetRemoteDataSourceImpl implements PetRemoteDataSource {
   }
 
   @override
-  Future<ApiResponse<bool>> updatePet(String token,int id, Map<String, dynamic> petData) async{
-    // TODO: implement updatePet
+  Future<ApiResponse<bool>> updatePet(String token, int id, Map<String, dynamic> petData) async {
     try {
       final uri = Uri.parse(baseUrl + "/Pet/UpdatePet/${id}");
 
-      // Tạo một yêu cầu multipart request
-      var request = http.MultipartRequest('POST', uri);
+      // Create a multipart request
+      var request = http.MultipartRequest('PATCH', uri);
 
-      // Đặt tiêu đề với token
+      // Set headers with token
       request.headers['Authorization'] = 'Bearer $token';
       request.headers['accept'] = '*/*';
 
-      // Thêm các trường form data
+      // Add fields from petData to form data
       request.fields['Allergy'] = petData['allergy'] ?? '';
       request.fields['Sex'] = petData['sex'].toString();
-      request.fields['Decription'] = petData['description'] ?? '';
+      request.fields['Decription'] = petData['description'] ?? '';  // Ensure correct field name here
       request.fields['Name'] = petData['name'] ?? '';
       request.fields['BehaviorCategoryId'] = petData['behaviorCategoryId'].toString();
       request.fields['IsNeuter'] = petData['isNeuter'].toString();
@@ -256,26 +255,74 @@ class PetRemoteDataSourceImpl implements PetRemoteDataSource {
       request.fields['Weight'] = petData['weight'].toString();
       request.fields['MicrochipNumber'] = petData['microchipNumber'] ?? '';
 
-      // Thêm file ảnh nếu có
+      // Add image file if it exists
       if (petData['image'] != null && petData['image'].isNotEmpty) {
-        var imageFile = await http.MultipartFile.fromPath('Image', petData['image']);
+        var imageFile = await http.MultipartFile.fromPath('PetImage', petData['image']);
         request.files.add(imageFile);
       }
 
-      // Gửi yêu cầu và lấy phản hồi
+      // Send the request
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
+      // Print out the full response body for debugging
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
       if (response.statusCode == 200) {
+        // Parse the response body into a Map
         final decodedResponse = json.decode(response.body) as Map<String, dynamic>;
+
+        // Print out the parsed response for debugging
+        print('Parsed Response: $decodedResponse');
+
         final data = decodedResponse['data'] as bool? ?? false;
         return ApiResponse<bool>.fromJson(decodedResponse, (json) => data);
       } else {
-        throw ServerException(message: 'Failed to add pet with status code: ${response.statusCode}');
+        throw ServerException(message: 'Failed to update pet with status code: ${response.statusCode}');
       }
+    } catch (e) {
+      print('Error occurred: ${e.toString()}');
+      throw ServerException(message: 'An unexpected error occurred: ${e.toString()}');
+    }
+  }
+  @override
+  Future<ApiResponse<bool>> deletePet(String token, int id) async {
+    try {
+      // Check if the token is available
+      if (token.isEmpty) {
+        throw UnauthorizedException(message: "Token is not available");
+      }
+
+      // Build the URI for the delete request
+      final uri = Uri.parse(baseUrl + "/Pet/DeletePet/$id");
+
+      // Send the DELETE request with headers
+      final response = await client.delete(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+          'accept': '*/*', // Accept any content type
+        },
+      );
+
+      // Check if the response status is successful
+      if (response.statusCode == 200) {
+        final decodedResponse = json.decode(response.body) as Map<String, dynamic>;
+        final data = decodedResponse['data'] as bool? ?? false;
+
+        return ApiResponse<bool>.fromJson(decodedResponse, (json) => data);
+      } else {
+        throw ServerException(message: 'Failed to delete pet with status code: ${response.statusCode}');
+      }
+    } on http.ClientException {
+      throw NetworkException(message: 'Network error occurred');
     } catch (e) {
       throw ServerException(message: 'An unexpected error occurred: ${e.toString()}');
     }
   }
+
+
 
 }
